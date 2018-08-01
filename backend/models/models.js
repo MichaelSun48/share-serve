@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
 
 mongoose.connect(connect);
@@ -15,7 +15,7 @@ var userSchema = new mongoose.Schema({
   picture: {
     type: String,
     required: true,
-  }
+  },
   email: {
     type: String,
     required: true,
@@ -93,4 +93,10 @@ var organizationSchema = new mongoose.Schema({
 
 var User = mongoose.model('User', userSchema);
 var Event = mongoose.model('Event', eventSchema);
-var Organization = mongoose.model('Organization', organizationSchema)
+var Organization = mongoose.model('Organization', organizationSchema);
+
+module.exports = {
+  User: User,
+  Event: Event,
+  Organization: Organization
+}
