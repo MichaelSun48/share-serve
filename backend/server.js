@@ -12,11 +12,12 @@ var models = require('./models/models');
 var app = express();
 var User = models.User;
 var Event = models.Event;
+var Organization = models.Organization;
 
 var connect = process.env.MONGODB_URI;
 mongoose.connect(connect);
 
-app.use(session({secret: process.env.secret}));
+//app.use(session({secret: process.env.secret}));
 
 app.use(passport.initialize());
 app.use(passport.session());
