@@ -1,5 +1,5 @@
 import React from 'react';
-import PickerSelect from 'react-native-picker-select'
+import PickerSelect from 'react-native-picker-select';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import {
   StyleSheet,
@@ -14,22 +14,28 @@ import {
   Keyboard,
   CameraRoll,
   Image,
+  AsyncStorage,
 } from 'react-native';
 import {
   StackNavigator,
   createDrawerNavigator
 } from 'react-navigation';
 import { ImagePicker, Permissions, Location, MapView } from 'expo'
+import Icon from 'react-native-vector-icons/FontAwesome'
+const userIcon = (<Icon name="user" size={30} color="black" />)
+const searchIcon = (<Icon name="search" size={30} color="black" />)
+const addIcon = (<Icon name="plus-square" size={30} color="black" />)
+const settingsIcon = (<Icon name="cog" size={30} color="black" />)
 /*##########################################################
 ############################################################
 ############################################################
                         Share Serve
 ############################################################
 ############################################################
-############################################################
+###########################################################
 ############################################################
 */
-var url = 'http://46604bd5.ngrok.io';
+var url = 'http://6ad8907a.ngrok.io';
 class App extends React.Component {
   render() {
     return (
@@ -90,6 +96,9 @@ class OrganizationWelcomeScreen extends React.Component{
         <TouchableOpacity onPress={()=>this.pressRegister()}style={[styles.button, styles.buttonBlue]}>
           <Text style={styles.buttonLabel}>Register as Organization</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() =>this.props.navigation.navigate('OrganizationFeed')}>
+          <Text>Feed</Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -114,6 +123,9 @@ class VolunteerWelcomeScreen extends React.Component{
         <TouchableOpacity onPress={()=>this.pressRegister()}style={[styles.button, styles.buttonBlue]}>
           <Text style={styles.buttonLabel}>Register as Volunteer</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() =>this.props.navigation.navigate('VolunteerFeed')}>
+          <Text>Feed</Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -136,7 +148,7 @@ class OrganizationRegisterScreen extends React.Component{
     title: 'OrganizationRegister'
   };
   post(){
-    fetch('/post')
+
   }
 
   submitInfo(){
@@ -144,8 +156,7 @@ class OrganizationRegisterScreen extends React.Component{
     let incomplete = false;
     if(!this.state.name ||
       !this.state.email ||
-      !this.state.phone ||
-      !this.state.showImage ||
+      // !this.state.showImage ||
       !this.state.mission ||
       !this.state.website ||
       !this.state.password ||
@@ -158,7 +169,35 @@ class OrganizationRegisterScreen extends React.Component{
     } else if(this.state.password !== this.state.confirmpassword){
       alert('Passwords must match!')
     } else {
-      alert('Success', this.state)
+      fetch(url + '/orgRegister', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: this.state.name,
+          description: this.state.mission,
+          email: this.state.email,
+          link: this.state.website,
+          password: this.state.password,
+          upcoming: []
+        })
+      })
+      .then((response) => {
+        return response.json()
+      })
+      .then((responseJson) => {
+        console.log(responseJson)
+        if (responseJson.success){
+          alert("Success");
+        } else{
+          alert("json FAILURE")
+        }
+      })
+      .catch((err) => {
+        console.log("ERROR", err);
+      })
     }
   }
 
@@ -198,16 +237,12 @@ class OrganizationRegisterScreen extends React.Component{
           placeholder="Email"
           onChangeText={(text) => this.setState({email: text})}
         />
-        <TextInput
-          style={styles.inputField}
-          placeholder="Phone"
-          onChangeText={(text) => this.setState({phone: text})}
-        />
-        <Button
-          onPress={this._pickImage}
-          title="Pick an image from camera roll"
-        />
-        {this.state.showImage && <Image style={{width:300, height:300, borderColor:'black', borderWidth: 1}} source={{uri:this.state.showImage}}/>}
+        {/* <TouchableOpacity
+          style={[styles.submitButton, styles.buttonRed]}
+          onPress={this._pickImage}>
+          <Text style={styles.buttonLabel}>Chose Profile Picture</Text>
+        </TouchableOpacity>
+        {this.state.showImage && <Image style={{width:300, height:300, borderColor:'black', borderWidth: 1, marginBottom: 30}} source={{uri:this.state.showImage}}/>} */}
 
         <TextInput
           style={styles.inputField}
@@ -245,7 +280,7 @@ class VolunteerRegisterScreen extends React.Component{
     this.state = {
       fname: null,
       lname: null,
-      picture: null,
+      showImage: null,
       email: null,
       age: null,
       gender: null,
@@ -256,16 +291,12 @@ class VolunteerRegisterScreen extends React.Component{
     this.submitInfo = this.submitInfo.bind(this)
   }
   static navigationOptions = {
-    title: 'VolunteerRegister'
+    title: 'Volunteer Register'
   };
-  hashPassword(password){
-    var hash = crypto.createHash('sha256') //Change this!!!
-    hash.update(password);
-    return hash.digest('hex');
-  }
+
   submitInfo(){
     Keyboard.dismiss;
-    let incomplete = false;
+    let incomplete;
     if(!this.state.fname ||
       !this.state.lname ||
       !this.state.email ||
@@ -273,6 +304,7 @@ class VolunteerRegisterScreen extends React.Component{
       !this.state.gender ||
       !this.state.bio ||
       !this.state.password ||
+      !this.state.showImage||
       !this.state.confirmpassword
     ){
       incomplete = true;
@@ -282,9 +314,9 @@ class VolunteerRegisterScreen extends React.Component{
     } else if(this.state.password !== this.state.confirmpassword){
       alert('Passwords must match!');
     } else {
-      alert('Success' + this.state);
       fetch(url + '/register', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
           "Content-Type": "application/json"
         },
@@ -292,40 +324,45 @@ class VolunteerRegisterScreen extends React.Component{
           fname: this.state.fname,
           lname: this.state.lname,
           gender: this.state.gender,
-          picture: this.state.picture,
+          picture: this.state.showImage,
           email: this.state.email,
           bio: this.state.bio,
           age: this.state.age,
-          password: this.hashPassword(this.state.password),
+          password: this.state.password,
         })
       })
-      .then((response) =>(response.json()))
+      .then((response) => {
+        return response.json()
+      })
       .then((responseJson) => {
+        console.log(responseJson)
         if (responseJson.success){
           alert("Success");
+          this.props.navigation.navigate('VolunteerLogin')
         } else{
-          alert("FAILURE")
+          alert("json FAILURE")
         }
       })
       .catch((err) => {
-        alert("FAILURE")
+        console.log("ERROR", err);
       })
     }
   }
 
   _pickImage = async () => {
-    const {
-      status: cameraRollPerm
-    } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-    console.log(cameraRollPerm);
-    // only if user allows permission to camera roll
-    if (cameraRollPerm === 'granted') {
-      let pickerResult = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-      });
-
-      this._handleImagePicked(pickerResult);
+    const permissions = await Promise.all(
+      Permissions.askAsync(Permissions.CAMERA),
+      Permissions.askAsync(Permissions.CAMERA_ROLL)
+    )
+    console.log('Permissions:', permissions)
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    console.log(result)
+    if(!result.cancelled){
+      this.setState({showImage: result.uri})
     }
   };
 
@@ -347,6 +384,7 @@ class VolunteerRegisterScreen extends React.Component{
             placeholder="Last name"
             onChangeText={(text) => this.setState({lname: text})}
           />
+
           <TextInput
             style={styles.inputField}
             placeholder="Email address"
@@ -384,14 +422,19 @@ class VolunteerRegisterScreen extends React.Component{
             hideIcon={true}
             style={{...pickerSelectStyles}}
           />
-          <TouchableOpacity style = {[styles.submitButton, styles.buttonRed]} onPress = {() => this._pickImage()}>
-            <Text style={styles.buttonLabel}>Add Photo</Text>
-          </TouchableOpacity>
           <TextInput
             style={styles.inputField}
             placeholder="Bio"
             onChangeText={(text) => this.setState({bio: text})}
           />
+
+          <TouchableOpacity
+            style={[styles.submitButton, styles.buttonRed]}
+            onPress={this._pickImage}>
+            <Text style={styles.buttonLabel}>Choose Profile Picture</Text>
+          </TouchableOpacity>
+          {this.state.showImage && <Image style={{width:300, height:300, borderColor:'black', borderWidth: 1, marginBottom: 30}} source={{uri:this.state.showImage}}/>}
+
           <TextInput
             style={styles.inputField}
             secureTextEntry = {true}
@@ -423,6 +466,30 @@ class OrganizationLoginScreen extends React.Component{
   static navigationOptions = {
     title: 'OrganizationLogin'
   };
+  submitInfo(){
+    fetch(url + '/orgLogin', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.email,
+        password: this.state.password
+      })
+    })
+    .then((response)=> response.json())
+    .then((jsonResponse) => {
+      if (jsonResponse){
+        AsyncStorage.setItem('Oemail', JSON.stringify(this.state.email))
+        .then(() => {console.log('Storage set.')})
+        this.props.navigation.navigate('OrganizationFeed')
+      } else{
+        alert("Bad credentials")
+      }
+    })
+    .catch((error) => {alert("Catch error" + JSON.stringify(error))})
+  }
   render(){
     return(
       <View style={{
@@ -440,6 +507,9 @@ class OrganizationLoginScreen extends React.Component{
           placeholder="Password"
           onChangeText={(text) => this.setState({password: text})}
         />
+        <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitInfo()}>
+          <Text style={styles.buttonLabel}>Submit</Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -457,17 +527,38 @@ class VolunteerLoginScreen extends React.Component{
   };
 
   submitLogin(){
+    Keyboard.dismiss
     fetch(url + '/login', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        email: this.state.email,
+        username: this.state.email,
         password: this.state.password
       })
     })
-    this.props.navigation.navigate('VolunteerFeed')
+    .then((response) =>{
+      console.log("RESPONSE", response);
+      return response.json()
+    })
+    .then((responseJson) => {
+      console.log('Response', responseJson)
+      if (responseJson.success){
+        this.props.navigation.navigate('VolunteerFeed')
+        alert("Successfully logged in");
+        AsyncStorage.setItem('email', this.state.email)
+        .then(() => {console.log('Storage set.')})
+      } else{
+        alert("Bad credentials")
+      }
+    })
+    .catch((err) => {
+      alert('Catch error', err);
+      console.log("ERROR", err);
+    })
+
   }
 
   render(){
@@ -497,27 +588,80 @@ class VolunteerLoginScreen extends React.Component{
   }
 }
 class OrganizationFeedScreen extends React.Component{
-  static navigationOptions = {
-    title: 'Feed'
-  };
   render(){
     return(
-      <View></View>
+      <View style={{
+        flex: 1
+      }}>
+        <View style={{
+          flex: 1,
+          flexDirection: 'row',
+          borderBottomWidth: 1,
+          justifyContent: 'space-between'
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.navigate('EventPost')} style={{
+            marginTop: 10,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20
+          }}>
+            {addIcon}
+          </TouchableOpacity>
+          <TouchableOpacity onPress = {() => this.props.navigation.navigate('SelfOrganizationProfile')} style={{
+            marginTop: 10,
+            marginRight: 20,
+            marginLeft: 20,
+            marginBottom: 10
+          }}>
+            {userIcon}
+          </TouchableOpacity>
+        </View>
+        <View style={{
+          flex: 10,
+        }}>
+        </View>
+      </View>
     )
   }
 }
 class VolunteerFeedScreen extends React.Component{
   static navigationOptions = {
     title: 'Feed',
-    drawerLabel: 'Feed'
+    headerLeft: null,
+    gesturesEnabled: false,
   };
+
   render(){
     return(
-      <View>
-        <Text>VolunteerFeedScreen</Text>
-        {/* <Button onPress = {() => this.props.navigation.navigate('Drawer')}
-        title="menu"
-        /> */}
+      <View style={{
+        flex: 1
+      }}>
+        <View style={{
+          flex: 1,
+          flexDirection: 'row',
+          borderBottomWidth: 1,
+          justifyContent: 'space-between'
+        }}>
+          <TouchableOpacity onPress={() => this.props.navigation.navigate('Search')} style={{
+            marginTop: 10,
+            marginBottom: 10,
+            marginLeft: 20
+          }}>
+            {searchIcon}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => this.props.navigation.navigate('SelfVolunteerProfile')} style={{
+            marginTop: 10,
+            marginRight: 20,
+            marginBottom: 10
+          }}>
+            {userIcon}
+          </TouchableOpacity>
+        </View>
+        <View style={{
+          flex: 10,
+        }}>
+
+        </View>
       </View>
     )
   }
@@ -527,12 +671,28 @@ class EventPost extends React.Component{
     super(props)
     this.state = {
       eventName: null,
-      picture: null,
+      showImage: null,
       time: null,
       location: null,
       description: null,
     }
   }
+  _pickImage = async () => {
+    const permissions = await Promise.all(
+      Permissions.askAsync(Permissions.CAMERA),
+      Permissions.askAsync(Permissions.CAMERA_ROLL)
+    )
+    console.log('Permissions:', permissions)
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    console.log(result)
+    if(!result.cancelled){
+      this.setState({showImage: result.uri})
+    }
+  };
   render(){
     return(
       <KeyboardAwareScrollView>
@@ -543,43 +703,31 @@ class EventPost extends React.Component{
         }}>
           <TextInput
             style={styles.inputField}
-            placeholder="Event name..."
+            placeholder="Event name"
             onChangeText={(text) => this.setState({eventName: text})}
           />
-          <TextInput
-            style={styles.inputField}
-            placeholder="Last name"
-            onChangeText={(text) => this.setState({lname: text})}
-          />
-          <TextInput
-            style={styles.inputField}
-            placeholder="Email address"
-            onChangeText={(text) => this.setState({email: text})}
-          />
-          <TextInput
-            style={styles.inputField}
-            placeholder="Age"
-            onChangeText={(text) => this.setState({age: text})}
-          />
-          <TouchableOpacity style = {[styles.submitButton, styles.buttonRed]} onPress = {() => this._pickImage()}>
-            <Text style={styles.buttonLabel}>Add Photo</Text>
+          <TouchableOpacity
+            style={[styles.submitButton, styles.buttonRed]}
+            onPress={this._pickImage}>
+            <Text style={styles.buttonLabel}>Choose Profile Picture</Text>
           </TouchableOpacity>
+          {this.state.showImage && <Image style={{width:300, height:300, borderColor:'black', borderWidth: 1, marginBottom: 30}} source={{uri:this.state.showImage}}/>}
+
           <TextInput
             style={styles.inputField}
-            placeholder="Bio"
-            onChangeText={(text) => this.setState({bio: text})}
+            placeholder="Time"
+            onChangeText={(text) => this.setState({time: text})}
           />
           <TextInput
             style={styles.inputField}
-            secureTextEntry = {true}
-            placeholder="Password"
-            onChangeText={(text) => this.setState({password: text})}
+            placeholder="Location"
+            onChangeText={(text) => this.setState({location: text})}
           />
           <TextInput
             style={styles.inputField}
-            secureTextEntry = {true}
-            placeholder="Confirm password"
-            onChangeText={(text) => this.setState({confirmpassword: text})}
+            placeholder="Description"
+
+            onChangeText={(text) => this.setState({description: text})}
           />
           <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitInfo()}>
             <Text style={styles.buttonLabel}>Submit</Text>
@@ -589,58 +737,216 @@ class EventPost extends React.Component{
     )
   }
 }
-// class VolunteerProfileScreen extends React.Component{
-//   static navigationOptions = {
-//     title: 'Profile',
-//     drawerLabel: 'Profile'
-//   };
-//   render(){
-//     return(
-//       <View>
-//         <Text>VolunteerProfileScreen</Text>
-//         <Button onPress = {() => this.props.navigation.navigate('Drawer')}
-//         title="menu"
-//         />
-//       </View>
-//     )
-//   }
-// }
-//
-// class VolunteerSearchScreen extends React.Component{
-//   static navigationOptions = {
-//     title: 'Search',
-//     drawerLabel: 'Search'
-//   };
-//   render(){
-//     return(
-//       <View>
-//         <Text>VolunteerSeacScreen</Text>
-//         <Button onPress = {() => this.props.navigation.navigate('Drawer')}
-//         title="menu"
-//         />
-//       </View>
-//     )
-//   }
-// }
+class SearchScreen extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      search: null
+    }
+  }
+  static navigationOptions = {
+    title: 'Search'
+  };
+  render() {
+    return (
+      <View style={styles.container}>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Search"
+          onChangeText={(text) => this.setState({search: text})}
+        />
+      </View>
+    )
+  }
+}
+class SelfVolunteerProfile extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      email: null,
+      fname: null,
+      lname: null,
+      bio: null,
+      picture: null,
+    }
+  }
+  static navigationOptions = {
+    title: 'Your Profile',
+    headerLeft: null,
+  };
 
-// const drawer = DrawerNavigator({
-//   VolunteerFeed: {
-//     screen: VolunteerFeedScreen
-//   },
-//   VolunteerProfile: {
-//     screen: VolunteerProfileScreen
-//   },
-//   VolunteerSearch: {
-//     screen: VolunteerProfileScreen
-//   }
-// },
-// {
-//   drawerPosition: 'right',
-//   intialRouteName: 'VolunteerFeed',
-//   drawerBackgroundColor: 'Blue',
-//   drawerWidth: 150,
-// });
-
+  componentDidMount(){
+    AsyncStorage.getItem('email')
+    .then((result) => {
+      this.setState({
+        email: result
+      })
+      fetch(`${url}/profile/${result}`, {
+        method: 'GET',
+        credentials: 'same-origin'
+      })
+      .then((response) => {
+        console.log(response)
+        return response.json()
+      })
+      .then((responseJson) => {
+        this.setState({
+          fname: responseJson.firstName,
+          lname: responseJson.lastName,
+          bio: responseJson.bio,
+          picture: responseJson.picture,
+        })
+      })
+    })
+  }
+  render(){
+    return(
+      <View style={{
+        flex: 1
+      }}>
+        <View style={{
+          flex: 1,
+          flexDirection: 'row',
+          borderBottomWidth: 1,
+          justifyContent: 'space-between'
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.navigate('VolunteerFeed')} style={{
+            marginTop: 10,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20
+          }}>
+            {addIcon}
+          </TouchableOpacity>
+          <TouchableOpacity onPress = {() => this.props.navigation.navigate('VolunteerSettings')} style={{
+            marginTop: 10,
+            marginRight: 20,
+            marginLeft: 20,
+            marginBottom: 10
+          }}>
+            {settingsIcon}
+          </TouchableOpacity>
+        </View>
+        <View style={{
+          flex: 10,
+        }}>
+          {this.state.picture && <Image style={{width:100, height:100, borderColor:'black', borderWidth: 1, marginBottom: 30}} source={{uri:this.state.picture}}/>}
+          <Text>{this.state.fname} {this.state.lname}</Text>
+          <Text>Bio: {this.state.bio}</Text>
+          <Text>Email: {this.state.email}</Text>
+        </View>
+      </View>
+    // return (
+    //   <View style={styles.container}>
+    //     <TouchableOpacity style={{
+    //       marginTop: 10,
+    //       marginRight: 20,
+    //       marginBottom: 10
+    //     }}>
+    //       {settingsIcon}
+    //     </TouchableOpacity>
+    //   </View>
+    // )
+    )
+  }
+}
+class SelfOrganizationProfile extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      email: null,
+    }
+  }
+  static navigationOptions = {
+    title: 'Your Profile',
+    headerLeft: null
+  };
+  componentDidMount(){
+    AsyncStorage.getItem('Oemail')
+    .then((result) => {
+      this.setState({
+        email: (result)
+      })
+    })
+  }
+  render(){
+    return (
+      <View>
+        <Text><Text>{this.state.email}</Text></Text>
+      </View>
+    )
+  }
+}
+class OrganizationProfile extends React.Component{
+  constructor(props){
+    super(props)
+  }
+  static navigationOptions = {
+    title: 'Name Of Organization',
+    headerLeft: null
+  };
+}
+class VolunteerProfile extends React.Component{
+  constructor(props){
+    super(props)
+  }
+  static navigationOptions = {
+    title: 'Name of Volunteer',
+    headerLeft: null
+  };
+}
+class Attending extends React.Component{
+  static navigationOptions = {
+    title: 'Attendees',
+  };
+  constructor(props){
+    super(props);
+    this.state = {
+      attendees: [],
+    }
+  }
+  render() {
+    return (
+      <View>
+        <View><Text>Array of Attendees</Text></View>
+      </View>
+    )
+  }
+}
+class VolunteerSettings extends React.Component{
+  static navigationOptions = {
+    title: 'Settings',
+  };
+  constructor(props){
+    super(props);
+    this.state = {
+    }
+  }
+  render() {
+    return (
+      <View>
+        <View><Text>Volunteer Settings</Text></View>
+      </View>
+    )
+  }
+}
+class OrganizationSettings extends React.Component{
+  static navigationOptions = {
+    title: 'Settings',
+  };
+  constructor(props){
+    super(props);
+    this.state = {
+    }
+  }
+  render() {
+    return (
+      <View>
+        <View><Text>Organization Settings</Text></View>
+      </View>
+    )
+  }
+}
 export default StackNavigator({
   Welcome: {
     screen: WelcomeScreen,
@@ -666,6 +972,27 @@ export default StackNavigator({
   VolunteerFeed: {
     screen: VolunteerFeedScreen,
   },
+  Search: {
+    screen: SearchScreen,
+  },
+  SelfVolunteerProfile: {
+    screen: SelfVolunteerProfile,
+  },
+  SelfOrganizationProfile: {
+    screen: SelfOrganizationProfile,
+  },
+  OrganizationProfile: {
+    screen: OrganizationProfile,
+  },
+  VolunteerProfile: {
+    screen: VolunteerProfile,
+  },
+  VolunteerSettings: {
+    screen: VolunteerSettings,
+  },
+  OrganizationSettings: {
+    screen: OrganizationSettings,
+  },
   // VolunteerSearch: {
   //   screen: VolunteerSearchScreen,
   // },
@@ -679,7 +1006,6 @@ export default StackNavigator({
     screen: EventPost,
   }
 })
-
 
 const styles = StyleSheet.create({
   container: {

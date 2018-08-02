@@ -37,6 +37,11 @@ var userSchema = new mongoose.Schema({
   events: {
     type: Array,
     required: true,
+  },
+  role: {
+    type: String,
+    default: 'volunteer',
+    required: true,
   }
 })
 var eventSchema = new mongoose.Schema({
@@ -62,7 +67,8 @@ var eventSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
-  }
+  },
+
 })
 
 var organizationSchema = new mongoose.Schema({
@@ -83,9 +89,18 @@ var organizationSchema = new mongoose.Schema({
   link: {
     type: String,
   },
+  password: {
+    type: String,
+    required: true
+  },
   upcoming: {
     type: Array,
     required: true,
+  },
+  role: {
+    type: 'String',
+    default: 'organization',
+    required: true
   }
 })
 

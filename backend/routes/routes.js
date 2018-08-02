@@ -2,6 +2,7 @@ var express = require('express');
 var models = require('../models/models');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var crypto = require('crypto')
 
 var User = models.User;
 var Event = models.Event;
@@ -25,13 +26,47 @@ function hashPassword(password){
 }
 
 module.exports = function(passport){
-  router.post('/login', passport.authenticate('local', function(error, success){
-    if (error){
-      res.json(false);
-    } else {
-      res.json(true);
-    }
+  router.post('/login', passport.authenticate('vol', {
+    successRedirect: '/login',
+    errorRedirect: '/login'
   }))
+  router.get('/login', function(req, res){
+    if (req.user){
+      res.status(200).json({success: true});
+    } else {
+      res.status(400).json({success: false});
+    }
+  })
+  router.post('/orgLogin', passport.authenticate('org', {
+    successRedirect: '/orgLogin',
+    errorRedirect: '/orgLogin'
+  }))
+  router.get('/orgLogin', function(req, res){
+    if (req.user){
+      res.status(200).json({success: true});
+    } else {
+      res.status(400).json({success: false});
+    }
+  })
+  router.post('/orgRegister', function(req, res){
+    var newOrganization = new Organization({
+      name: req.body.name,
+      description: req.body.description,
+      email: req.body.email,
+      link: req.body.link,
+      password: hashPassword(req.body.password),
+      upcoming: req.body.upcoming,
+    })
+    newOrganization.save(function(error, success){
+      if (error){
+        console.log("Failed to save new organization", error);
+        res.status(500).json({success: false});
+      } else {
+        console.log("Successfully saved new organization");
+        res.status(200).json({success: true});
+      }
+    })
+  })
   router.post('/register', function(req, res){
     console.log('Successfully linked');
     var newUser = new User({
@@ -42,13 +77,15 @@ module.exports = function(passport){
       age: req.body.age,
       gender: req.body.gender,
       bio: req.body.bio,
-      password: req.body.password,
+      password: hashPassword(req.body.password),
     });
     newUser.save(function(error, success){
       if (error){
         console.log("Failed to save new user", error);
+        res.status(500).json({success: false});
       } else {
         console.log("Sucessfully saved new user");
+        res.status(200).json({success: true});
       }
     })
   });
@@ -79,15 +116,25 @@ module.exports = function(passport){
       }
     })
   });
-  router.get('/profile/:userID', function(req, res){
-    var userID = req.params.userID;
-    User.findByid(userID, function(error, user){
+  router.get('/profile/:email', function(req, res){
+    var email = req.params.email;
+    console.log(email);
+    User.findOne({"email": email}, function(error, success){
       if (error){
         console.log("Failed while finding user", error);
-      } else {
-        res.json(user);
+      } else{
+        console.log("Supposed user: ", success);
+        res.json(success);
       }
     })
+    // var userID = req.params.userID;
+    // User.findByid(userID, function(error, user){
+    //   if (error){
+    //     console.log("Failed while finding user", error);
+    //   } else {
+    //     res.json(user);
+    //   }
+    // })
   });
   router.get('/organization/:organizationID', function(req, res){
     var organizationID = req.params.organizationID
@@ -96,18 +143,28 @@ module.exports = function(passport){
         console.log("Failed while finding organization", error);
       } else {
         res.json(organization);
-      });
-    })
+      }
+    });
   });
   router.get('/allEvents', function(req, res){
     Event.find({}, function(error, events){
       if (error){
-        console.log("Error while finding all events");
+        console.log("Failed while finding all events");
       } else {
         res.json(events);
       }
     })
   });
+  router.get('/allUsers', function(req, res){
+    User.find({}, function(error, users){
+      if (error){
+        console.log("Failed while finding all users");
+      } else{
+        res.json(users);
+      }
+    })
+  })
+
   router.get('/attendees/:eventID', function(req, res){
     var eventID = req.params.eventID
     Event.findById(eventID, function(error, event){
