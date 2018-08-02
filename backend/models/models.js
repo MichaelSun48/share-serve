@@ -14,7 +14,6 @@ var userSchema = new mongoose.Schema({
   },
   picture: {
     type: String,
-    required: true,
   },
   email: {
     type: String,
@@ -26,7 +25,6 @@ var userSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    required: true,
   },
   bio: {
     type: String,

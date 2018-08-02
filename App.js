@@ -1,4 +1,6 @@
 import React from 'react';
+import PickerSelect from 'react-native-picker-select'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import {
   StyleSheet,
   Text,
@@ -10,9 +12,14 @@ import {
   Button,
   ScrollView,
   Keyboard,
+  CameraRoll,
+  Image,
 } from 'react-native';
-import TogglePicker from 'react-native-toggle-picker'
-import { StackNavigator } from 'react-navigation';
+import {
+  StackNavigator,
+  createDrawerNavigator
+} from 'react-navigation';
+import { ImagePicker, Permissions, Location, MapView } from 'expo'
 /*##########################################################
 ############################################################
 ############################################################
@@ -22,6 +29,7 @@ import { StackNavigator } from 'react-navigation';
 ############################################################
 ############################################################
 */
+var url = 'http://46604bd5.ngrok.io';
 class App extends React.Component {
   render() {
     return (
@@ -114,11 +122,14 @@ class OrganizationRegisterScreen extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      name: '',
-      picture: '',
-      mission: '',
-      website: '',
-      password: '',
+      name: null,
+      email: null,
+      phone: null,
+      showImage: null,
+      mission: null,
+      website: null,
+      password: null,
+      confirmpassword: null
     }
   }
   static navigationOptions = {
@@ -127,35 +138,104 @@ class OrganizationRegisterScreen extends React.Component{
   post(){
     fetch('/post')
   }
+
+  submitInfo(){
+    Keyboard.dismiss;
+    let incomplete = false;
+    if(!this.state.name ||
+      !this.state.email ||
+      !this.state.phone ||
+      !this.state.showImage ||
+      !this.state.mission ||
+      !this.state.website ||
+      !this.state.password ||
+      !this.state.confirmpassword
+    ){
+      incomplete = true;
+    }
+    if(incomplete){
+      alert('All fields must be filled!')
+    } else if(this.state.password !== this.state.confirmpassword){
+      alert('Passwords must match!')
+    } else {
+      alert('Success', this.state)
+    }
+  }
+
+  _pickImage = async () => {
+    const permissions = await Promise.all(
+      Permissions.askAsync(Permissions.CAMERA),
+      Permissions.askAsync(Permissions.CAMERA_ROLL)
+    )
+    console.log('Permissions:', permissions)
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    console.log(result)
+    if(!result.cancelled){
+      this.setState({showImage: result.uri})
+    }
+  };
+
   render(){
     return(
-      <View style={styles.container}>
+      <KeyboardAwareScrollView extraScrollHeight={10}>
+        <View style={{
+          flex: 1,
+          marginTop: 20,
+          marginBottom: 20,
+          alignItems: 'center'
+        }}>
         <TextInput
-          style={{height: 40}}
-          placeholder="Name of your organization"
+          style={styles.inputField}
+          placeholder="Name of Organization"
           onChangeText={(text) => this.setState({name: text})}
         />
         <TextInput
-          style={{height: 80}}
-          placeholder="What's your organization's mission?"
-          onChangeText={(text) => this.setState({name: text})}
+          style={styles.inputField}
+          placeholder="Email"
+          onChangeText={(text) => this.setState({email: text})}
         />
         <TextInput
-          style={{height: 40}}
+          style={styles.inputField}
+          placeholder="Phone"
+          onChangeText={(text) => this.setState({phone: text})}
+        />
+        <Button
+          onPress={this._pickImage}
+          title="Pick an image from camera roll"
+        />
+        {this.state.showImage && <Image style={{width:300, height:300, borderColor:'black', borderWidth: 1}} source={{uri:this.state.showImage}}/>}
+
+        <TextInput
+          style={styles.inputField}
+          placeholder="What's your mission?"
+          onChangeText={(text) => this.setState({mission: text})}
+        />
+        <TextInput
+          style={styles.inputField}
           placeholder="Website link"
-          onChangeText={(text) => this.setState({name: text})}
+          onChangeText={(text) => this.setState({website: text})}
         />
         <TextInput
-          style={{height: 40}}
+          secureTextEntry = {true}
+          style={styles.inputField}
           placeholder="Password"
-          onChangeText={(text) => this.setState({name: text})}
+          onChangeText={(text) => this.setState({password: text})}
         />
         <TextInput
-          style={{height: 40}}
-          placeholder="Repeat Password"
-          onChangeText={(text) => this.setState({name: text})}
+          secureTextEntry = {true}
+          style={styles.inputField}
+          placeholder="Confirm Password"
+          onChangeText={(text) => this.setState({confirmpassword: text})}
         />
+        <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitInfo()}>
+          <Text style={styles.buttonLabel}>Submit</Text>
+        </TouchableOpacity>
       </View>
+    </KeyboardAwareScrollView>
     )
   }
 }
@@ -165,6 +245,7 @@ class VolunteerRegisterScreen extends React.Component{
     this.state = {
       fname: null,
       lname: null,
+      picture: null,
       email: null,
       age: null,
       gender: null,
@@ -177,6 +258,11 @@ class VolunteerRegisterScreen extends React.Component{
   static navigationOptions = {
     title: 'VolunteerRegister'
   };
+  hashPassword(password){
+    var hash = crypto.createHash('sha256') //Change this!!!
+    hash.update(password);
+    return hash.digest('hex');
+  }
   submitInfo(){
     Keyboard.dismiss;
     let incomplete = false;
@@ -192,16 +278,60 @@ class VolunteerRegisterScreen extends React.Component{
       incomplete = true;
     }
     if(incomplete){
-      alert('All fields must be filled!')
+      alert('All fields must be filled!');
     } else if(this.state.password !== this.state.confirmpassword){
-      alert('Passwords must match!')
+      alert('Passwords must match!');
     } else {
-      alert('Success', this.state)
+      alert('Success' + this.state);
+      fetch(url + '/register', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fname: this.state.fname,
+          lname: this.state.lname,
+          gender: this.state.gender,
+          picture: this.state.picture,
+          email: this.state.email,
+          bio: this.state.bio,
+          age: this.state.age,
+          password: this.hashPassword(this.state.password),
+        })
+      })
+      .then((response) =>(response.json()))
+      .then((responseJson) => {
+        if (responseJson.success){
+          alert("Success");
+        } else{
+          alert("FAILURE")
+        }
+      })
+      .catch((err) => {
+        alert("FAILURE")
+      })
     }
   }
+
+  _pickImage = async () => {
+    const {
+      status: cameraRollPerm
+    } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    console.log(cameraRollPerm);
+    // only if user allows permission to camera roll
+    if (cameraRollPerm === 'granted') {
+      let pickerResult = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+      });
+
+      this._handleImagePicked(pickerResult);
+    }
+  };
+
   render(){
     return(
-      <ScrollView>
+      <KeyboardAwareScrollView extraScrollHeight={10}>
         <View style={{
           flex: 1,
           marginTop: 20,
@@ -228,19 +358,35 @@ class VolunteerRegisterScreen extends React.Component{
             onChangeText={(text) => this.setState({age: text})}
           />
 
-          <TogglePicker
-            label='Gender'
-            onValueChange={(itemValue) => {this.setState({gender:itemValue})}}
-            >
-              <Picker.Item label='Male' value='Male' />
-              <Picker.Item label='Female' value='Female' />
-              <Picker.Item label='Other' value='Other' />
-            </TogglePicker>
-          {/* <TextInput
-            style={styles.inputField}
-            placeholder="Gender"
-            onChangeText={(text) => this.setState({gender: text})}
-          /> */}
+          <PickerSelect
+            placeholder = {{
+              label: "Select gender..."
+            }}
+            items = {[
+              {
+                label: 'Male',
+                value: 'Male',
+              },
+              {
+                label: 'Female',
+                value: 'Female',
+              },
+              {
+                label: 'Other',
+                value: 'Other'
+              }
+            ]}
+            onValueChange={(value) => {
+              this.setState({
+                gender: value
+              })
+            }}
+            hideIcon={true}
+            style={{...pickerSelectStyles}}
+          />
+          <TouchableOpacity style = {[styles.submitButton, styles.buttonRed]} onPress = {() => this._pickImage()}>
+            <Text style={styles.buttonLabel}>Add Photo</Text>
+          </TouchableOpacity>
           <TextInput
             style={styles.inputField}
             placeholder="Bio"
@@ -262,11 +408,10 @@ class VolunteerRegisterScreen extends React.Component{
             <Text style={styles.buttonLabel}>Submit</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     )
   }
 }
-
 class OrganizationLoginScreen extends React.Component{
   constructor(props){
     super(props);
@@ -310,6 +455,21 @@ class VolunteerLoginScreen extends React.Component{
   static navigationOptions = {
     title: 'VolunteerLogin'
   };
+
+  submitLogin(){
+    fetch(url + '/login', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: this.state.email,
+        password: this.state.password
+      })
+    })
+    this.props.navigation.navigate('VolunteerFeed')
+  }
+
   render(){
     return(
       <View style={{
@@ -319,19 +479,23 @@ class VolunteerLoginScreen extends React.Component{
       }}>
         <TextInput
           style={styles.inputField}
+          name="email"
           placeholder="E-Mail"
           onChangeText={(text) => this.setState({email: text})}
         />
         <TextInput
           style={styles.inputField}
+          name="password"
           placeholder="Password"
           onChangeText={(text) => this.setState({password: text})}
         />
+        <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitLogin()}>
+          <Text style={styles.buttonLabel}>Login</Text>
+        </TouchableOpacity>
       </View>
     )
   }
 }
-
 class OrganizationFeedScreen extends React.Component{
   static navigationOptions = {
     title: 'Feed'
@@ -344,14 +508,138 @@ class OrganizationFeedScreen extends React.Component{
 }
 class VolunteerFeedScreen extends React.Component{
   static navigationOptions = {
-    title: 'Feed'
+    title: 'Feed',
+    drawerLabel: 'Feed'
   };
   render(){
     return(
-      <View></View>
+      <View>
+        <Text>VolunteerFeedScreen</Text>
+        {/* <Button onPress = {() => this.props.navigation.navigate('Drawer')}
+        title="menu"
+        /> */}
+      </View>
     )
   }
 }
+class EventPost extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      eventName: null,
+      picture: null,
+      time: null,
+      location: null,
+      description: null,
+    }
+  }
+  render(){
+    return(
+      <KeyboardAwareScrollView>
+        <View style={{
+          flex: 1,
+          marginTop: 20,
+          alignItems: 'center'
+        }}>
+          <TextInput
+            style={styles.inputField}
+            placeholder="Event name..."
+            onChangeText={(text) => this.setState({eventName: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            placeholder="Last name"
+            onChangeText={(text) => this.setState({lname: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            placeholder="Email address"
+            onChangeText={(text) => this.setState({email: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            placeholder="Age"
+            onChangeText={(text) => this.setState({age: text})}
+          />
+          <TouchableOpacity style = {[styles.submitButton, styles.buttonRed]} onPress = {() => this._pickImage()}>
+            <Text style={styles.buttonLabel}>Add Photo</Text>
+          </TouchableOpacity>
+          <TextInput
+            style={styles.inputField}
+            placeholder="Bio"
+            onChangeText={(text) => this.setState({bio: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            secureTextEntry = {true}
+            placeholder="Password"
+            onChangeText={(text) => this.setState({password: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            secureTextEntry = {true}
+            placeholder="Confirm password"
+            onChangeText={(text) => this.setState({confirmpassword: text})}
+          />
+          <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitInfo()}>
+            <Text style={styles.buttonLabel}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
+    )
+  }
+}
+// class VolunteerProfileScreen extends React.Component{
+//   static navigationOptions = {
+//     title: 'Profile',
+//     drawerLabel: 'Profile'
+//   };
+//   render(){
+//     return(
+//       <View>
+//         <Text>VolunteerProfileScreen</Text>
+//         <Button onPress = {() => this.props.navigation.navigate('Drawer')}
+//         title="menu"
+//         />
+//       </View>
+//     )
+//   }
+// }
+//
+// class VolunteerSearchScreen extends React.Component{
+//   static navigationOptions = {
+//     title: 'Search',
+//     drawerLabel: 'Search'
+//   };
+//   render(){
+//     return(
+//       <View>
+//         <Text>VolunteerSeacScreen</Text>
+//         <Button onPress = {() => this.props.navigation.navigate('Drawer')}
+//         title="menu"
+//         />
+//       </View>
+//     )
+//   }
+// }
+
+// const drawer = DrawerNavigator({
+//   VolunteerFeed: {
+//     screen: VolunteerFeedScreen
+//   },
+//   VolunteerProfile: {
+//     screen: VolunteerProfileScreen
+//   },
+//   VolunteerSearch: {
+//     screen: VolunteerProfileScreen
+//   }
+// },
+// {
+//   drawerPosition: 'right',
+//   intialRouteName: 'VolunteerFeed',
+//   drawerBackgroundColor: 'Blue',
+//   drawerWidth: 150,
+// });
 
 export default StackNavigator({
   Welcome: {
@@ -378,10 +666,18 @@ export default StackNavigator({
   VolunteerFeed: {
     screen: VolunteerFeedScreen,
   },
+  // VolunteerSearch: {
+  //   screen: VolunteerSearchScreen,
+  // },
+  // VolunteerProfile: {
+  //   screen: VolunteerProfileScreen,
+  // },
   OrganizationFeed: {
     screen: OrganizationFeedScreen,
   },
-
+  EventPost: {
+    screen: EventPost,
+  }
 })
 
 
@@ -412,7 +708,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     height: 40,
-    width: 200,
+    alignSelf: 'stretch',
+    marginLeft: 10,
+    marginRight: 10,
     paddingLeft: 10,
     marginBottom: 30
   },
@@ -428,15 +726,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 5,
     marginRight: 5,
-    borderRadius: 5
+    borderRadius: 5,
   },
   submitButton: {
     width: 200,
     paddingTop: 10,
     paddingBottom: 10,
-    marginTop: 10,
     marginLeft: 5,
     marginRight: 5,
+    marginBottom: 30,
     borderRadius: 5
   },
   buttonRed: {
@@ -453,4 +751,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white'
   }
+});
+
+const pickerSelectStyles = StyleSheet.create({
+    inputIOS: {
+      alignSelf: 'stretch',
+      marginLeft: 10,
+      marginRight: 10,
+      height: 40,
+      paddingLeft: 10,
+      marginBottom: 30,
+      borderWidth: 1,
+      borderRadius: 5,
+      color: 'black',
+    },
 });

@@ -9,6 +9,23 @@ function hashPassword(password){
   return hash.digest('hex');
 }
 
+
+
+
 module.exports = function(passport){
+  // router.post('/login', function(req, res){
+  //   var email = req.body.email;
+  //   var password = req.body.password;
+  //   User.find({email: email}, function(error, user){
+  //     if (error){
+  //       console.log("Failed while finding user");
+  //     } else {
+  //       if user.password
+  //     }
+  //   })
+  // });
+  router.post('/login', passport.authenticate('local', )){
+
+  }
   return router;
 };

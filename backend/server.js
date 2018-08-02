@@ -19,8 +19,7 @@ mongoose.connect(connect);
 
 //app.use(session({secret: process.env.secret}));
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 passport.serializeUser((user, done) => {
   done(null, user._id);
@@ -39,11 +38,22 @@ function hashPassword(password){
 }
 
 
-passport.use(new LocalStrategy(
-  function(email, password, done){
-    //TODO
-  }
-))
+passport.use(new LocalStrategy(function(email, password, done){
+  User.findOne({email: email, password: password})
+  .exec()
+  .then(function(user){
+    if(user){
+      console.log(user)
+      done(null, user)
+    }else{
+      console.log("Error!")
+      done(null, false)
+    }
+  })
+}))
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', auth(passport));
 app.use('/', routes);
