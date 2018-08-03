@@ -49,16 +49,19 @@ var eventSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  name: {
+    type: String,
+    required: true,
+  },
   attendees: {
     type: Array,
     required: true,
   },
   location: {
     type: String,
-    required: true,
   },
   time: {
-    type: Date,
+    type: String,
     required: true,
   },
   picture: {
@@ -68,7 +71,6 @@ var eventSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-
 })
 
 var organizationSchema = new mongoose.Schema({

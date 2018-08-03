@@ -52,6 +52,7 @@ module.exports = function(passport){
     var newOrganization = new Organization({
       name: req.body.name,
       description: req.body.description,
+      picture: req.body.picture,
       email: req.body.email,
       link: req.body.link,
       password: hashPassword(req.body.password),
@@ -102,7 +103,24 @@ module.exports = function(passport){
     })
   });
   router.post('/event', function(req, res){
-
+    var newEvent = new Event({
+      organization: req.body.organization,
+      attendees: [],
+      location: req.body.location,
+      time: req.body.time,
+      picture: req.body.picture,
+      description: req.body.description,
+      name: req.body.name,
+    })
+    newEvent.save(function(error, success){
+      if (error){
+        console.log("Failed while saving new event", error);
+        res.status(500).json({success: false});
+      } else {
+        console.log("Successfully saved new event");
+        res.status(500).json({success: true});
+      }
+    })
   })
 
 
@@ -136,12 +154,14 @@ module.exports = function(passport){
     //   }
     // })
   });
-  router.get('/organization/:organizationID', function(req, res){
-    var organizationID = req.params.organizationID
-    Organization.findById(organizationID, function(error, organization){
+  router.get('/organization/:email', function(req, res){
+
+    var email = req.params.email;
+    Organization.findOne({"email": email}, function(error, organization){
       if (error){
         console.log("Failed while finding organization", error);
       } else {
+        console.log("Organization", organization)
         res.json(organization);
       }
     });
@@ -151,9 +171,14 @@ module.exports = function(passport){
       if (error){
         console.log("Failed while finding all events");
       } else {
+        console.log('Backend events:', events)
         res.json(events);
       }
     })
+  });
+  router.post('/editVolProfile', function(req, res){
+  });
+  router.post('/editOrgProfile', function(req, res){
   });
   router.get('/allUsers', function(req, res){
     User.find({}, function(error, users){
