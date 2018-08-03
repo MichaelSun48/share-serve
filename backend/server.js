@@ -7,7 +7,6 @@ var LocalStrategy = require('passport-local').Strategy;
 var session = require('express-session');
 var auth = require('./routes/auth');
 var routes = require('./routes/routes');
-
 var models = require('./models/models');
 var app = express();
 var User = models.User;
