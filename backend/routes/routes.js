@@ -25,6 +25,9 @@ function hashPassword(password){
   return hash.digest('hex');
 }
 function repeatCheck(array, object){
+  if (array.length == 0){
+    return false;
+  }
   for (var i = 0; i < array.length; i++){
     if (array[i]._id === object._id){
       return false;
@@ -99,6 +102,8 @@ module.exports = function(passport){
     })
   });
 
+
+
   router.post('/signup', function(req, res){
     var eventID = req.body.eventID;
     var userEmail = req.body.userEmail;
@@ -114,13 +119,13 @@ module.exports = function(passport){
             console.log("Failed while finding user to push into attendees", error);
           } else {
             //console.log("INFO: "+ event.attendees + " " + !repeatCheck(event.attendees, user))
-            if (repeatCheck(event.attendees, user)){
+            if (!repeatCheck(event.attendees, user)){
               console.log("work please")
               event.attendees.push(user);
               event.save();
               console.log("Successfully added user to event")
-            } else if(!repeatCheck(event.attendees, user)) {
-              for(var i = 0; i < event.attendees.length; i++){
+            } else {
+              for(var i = 0; i < event.attendees.length; i++){9
                 if(event.attendees[i].email === userEmail){
                   var arr1 = event.attendees.slice(0, i)
                   var arr2 = event.attendees.slice(i + 1, event.attendees.length)

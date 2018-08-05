@@ -16,7 +16,8 @@ import {
   Image,
   AsyncStorage,
   Animated,
-  Dimensions
+  Dimensions,
+  Easing
 } from 'react-native';
 import {
   StackNavigator,
@@ -41,7 +42,18 @@ const backIcon =(<Icon name = "chevron-left" size={20} color="black"/>)
 ############################################################
 */
 let deviceWidth = Dimensions.get('window').width
-let url = 'http://23b030d8.ngrok.io';
+let url = 'http://1e7093fa.ngrok.io';
+function repeatCheck(array, object){
+  if (array.length == 0){
+    return false;
+  }
+  for (var i = 0; i < array.length; i++){
+    if (array[i].email === object){
+      return false;
+    }
+  }
+  return true;
+}
 class App extends React.Component {
   render() {
     return (
@@ -73,16 +85,19 @@ class WelcomeScreen extends React.Component{
       <View style={{
         flex: 1
       }}>
-        <View style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          borderBottomWidth: 1,
-        }}>
-          <Text style={{
-            paddingBottom: 10,
-          }}>Share-Serve</Text>
-        </View>
+          <View style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            borderBottomWidth: 1,
+          }}>
+            <Text style={{
+              fontFamily: 'Avenir',
+              fontSize: 23,
+              fontWeight: 'bold',
+              marginBottom: 5,
+            }}>Share-Serve</Text>
+          </View>
         <View style={{
           flex: 9,
           flexDirection: 'row',
@@ -97,7 +112,11 @@ class WelcomeScreen extends React.Component{
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Text>Volunteer</Text>
+                <View style={{
+
+                }}>
+                  <Text style={{fontSize: 20, fontFamily: 'Avenir'}}>Volunteer</Text>
+                </View>
               </View>
             </Transition>
           </TouchableOpacity>
@@ -111,7 +130,7 @@ class WelcomeScreen extends React.Component{
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Text>Organization</Text>
+              <Text style={{fontSize: 20, fontFamily: 'Avenir'}}>Organization</Text>
               </View>
             </Transition>
           </TouchableOpacity>
@@ -186,36 +205,73 @@ class OrganizationWelcomeScreen extends React.Component{
   render(){
     return(
       <View style={{
-        flex: 9,
-        flexDirection: 'row',
-      }}>
-        <TouchableOpacity style={{flex: 1, width: deviceWidth/2}}onPress={() => this.pressLogin()}>
-          <Transition appear="left" disappear='bottom'>
+          flex: 1
+        }}>
+          <Transition appear="vertical" disappear="vertical">
             <View style={{
               flex: 1,
-              width: deviceWidth/2,
-              borderRightWidth: 1,
-              borderLeftWidth: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              borderBottomWidth: 1,
+              flexDirection: 'row',
             }}>
-            <Text>Login as an Organization</Text>
+              <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+                marginTop: 20,
+                marginBottom: 10,
+                marginRight: 20,
+                marginLeft: 20,
+
+              }}>
+                {backIcon}
+              </TouchableOpacity>
+              <Text style={{
+                fontFamily: 'Avenir',
+                fontSize: 23,
+                fontWeight: 'bold',
+                marginBottom: 5,
+              }}>Organizations</Text>
+              <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+                marginTop: 20,
+                marginBottom: 10,
+                marginRight: 20,
+                marginLeft: 20,
+
+              }}>
+              </TouchableOpacity>
             </View>
           </Transition>
-        </TouchableOpacity><TouchableOpacity style={{flex: 1, width: deviceWidth/2}}onPress={() => this.pressRegister()}>
-          <Transition appear="left" disappear='bottom'>
-            <View style={{
-              flex: 1,
-              width: deviceWidth/2,
-              borderRightWidth: 1,
-              borderLeftWidth: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text>Register as an Organization</Text>
-            </View>
-          </Transition>
-        </TouchableOpacity>
+        <View style={{
+          flex: 10,
+          flexDirection: 'row',
+        }}>
+          <TouchableOpacity style={{flex: 1, width: deviceWidth/2}}onPress={() => this.pressLogin()}>
+            <Transition appear="flip" disappear='flip'>
+              <View style={{
+                flex: 1,
+                width: deviceWidth/2,
+                borderRightWidth: 1,
+                borderLeftWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{fontSize: 20, textAlign: 'center', fontFamily: 'Avenir'}}>Login as an Organization</Text>
+              </View>
+            </Transition>
+          </TouchableOpacity><TouchableOpacity style={{flex: 1, width: deviceWidth/2}}onPress={() => this.pressRegister()}>
+            <Transition appear="flip" disappear='flip'>
+              <View style={{
+                flex: 1,
+                width: deviceWidth/2,
+                borderRightWidth: 1,
+                borderLeftWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{fontSize: 20, textAlign: 'center', fontFamily: 'Avenir'}}>Register as an Organization</Text>
+              </View>
+            </Transition>
+          </TouchableOpacity>
+        </View>
       </View>
     )
   }
@@ -233,13 +289,74 @@ class VolunteerWelcomeScreen extends React.Component{
   }
   render(){
     return(
-      <View style={styles.container}>
-        <TouchableOpacity onPress={()=>this.pressLogin()}style={[styles.button, styles.buttonGreen]}>
-          <Text style={styles.buttonLabel}>Login as Volunteer</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={()=>this.pressRegister()}style={[styles.button, styles.buttonBlue]}>
-          <Text style={styles.buttonLabel}>Register as Volunteer</Text>
-        </TouchableOpacity>
+      <View style={{
+          flex: 1
+        }}>
+          <Transition appear="vertical" disappear="vertical">
+            <View style={{
+              flex: 1,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              borderBottomWidth: 1,
+              flexDirection: 'row',
+            }}>
+              <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+                marginTop: 20,
+                marginBottom: 10,
+                marginRight: 20,
+                marginLeft: 20,
+
+              }}>
+                {backIcon}
+              </TouchableOpacity>
+              <Text style={{
+                fontFamily: 'Avenir',
+                fontSize: 23,
+                fontWeight: 'bold',
+                marginBottom: 5,
+              }}>Volunteers</Text>
+              <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+                marginTop: 20,
+                marginBottom: 10,
+                marginRight: 20,
+                marginLeft: 20,
+
+              }}>
+              </TouchableOpacity>
+            </View>
+          </Transition>
+        <View style={{
+          flex: 10,
+          flexDirection: 'row',
+        }}>
+          <TouchableOpacity style={{flex: 1, width: deviceWidth/2}}onPress={() => this.pressLogin()}>
+            <Transition appear="flip" disappear='flip'>
+              <View style={{
+                flex: 1,
+                width: deviceWidth/2,
+                borderRightWidth: 1,
+                borderLeftWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{fontSize: 20, textAlign: 'center', fontFamily: 'Avenir'}}>Login as a Volunteer</Text>
+              </View>
+            </Transition>
+          </TouchableOpacity><TouchableOpacity style={{flex: 1, width: deviceWidth/2}}onPress={() => this.pressRegister()}>
+            <Transition appear="flip" disappear='flip'>
+              <View style={{
+                flex: 1,
+                width: deviceWidth/2,
+                borderRightWidth: 1,
+                borderLeftWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text style={{fontSize: 20, textAlign: 'center', fontFamily: 'Avenir'}}>Register as a Volunteer</Text>
+              </View>
+            </Transition>
+          </TouchableOpacity>
+        </View>
       </View>
     )
   }
@@ -306,6 +423,7 @@ class OrganizationRegisterScreen extends React.Component{
         console.log(responseJson)
         if (responseJson.success){
           alert("Success");
+          this.props.navigation.navigate('OrganizationLogin')
         } else{
           alert("json FAILURE")
         }
@@ -342,6 +460,39 @@ class OrganizationRegisterScreen extends React.Component{
           marginBottom: 20,
           alignItems: 'center'
         }}>
+        <View style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          borderBottomWidth: 1,
+          flexDirection: 'row',
+          paddingTop: 10,
+          marginBottom: 10,
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+            {backIcon}
+          </TouchableOpacity>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5,
+          }}>Register as an Organization</Text>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+          </TouchableOpacity>
+        </View>
         <TextInput
           style={styles.inputField}
           placeholder="Name of Organization"
@@ -489,6 +640,39 @@ class VolunteerRegisterScreen extends React.Component{
           marginTop: 20,
           alignItems: 'center'
         }}>
+        <View style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          borderBottomWidth: 1,
+          flexDirection: 'row',
+          paddingTop: 10,
+          marginBottom: 10,
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+            {backIcon}
+          </TouchableOpacity>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5,
+          }}>Register as a Volunteer</Text>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+          </TouchableOpacity>
+        </View>
           <TextInput
             style={styles.inputField}
             placeholder="First name"
@@ -582,6 +766,7 @@ class OrganizationLoginScreen extends React.Component{
     title: 'OrganizationLogin'
   };
   submitInfo(){
+    Keyboard.dismiss;
     fetch(url + '/orgLogin', {
       method: 'POST',
       credentials: 'same-origin',
@@ -596,6 +781,7 @@ class OrganizationLoginScreen extends React.Component{
     .then((response)=> response.json())
     .then((jsonResponse) => {
       if (jsonResponse){
+        Keyboard.dismiss
         this.props.navigation.navigate('OrganizationFeed')
         AsyncStorage.setItem('Oemail', this.state.email)
         .then(() => {console.log('Storage set.')})
@@ -607,25 +793,61 @@ class OrganizationLoginScreen extends React.Component{
   }
   render(){
     return(
-      <View style={{
-        flex: 1,
-        marginTop: 20,
-        alignItems: 'center'
-      }}>
-        <TextInput
-          style={styles.inputField}
-          placeholder="E-Mail"
-          onChangeText={(text) => this.setState({email: text})}
-        />
-        <TextInput
-          style={styles.inputField}
-          placeholder="Password"
-          onChangeText={(text) => this.setState({password: text})}
-        />
-        <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitInfo()}>
-          <Text style={styles.buttonLabel}>Submit</Text>
-        </TouchableOpacity>
-      </View>
+      <KeyboardAwareScrollView extraScrollHeight={10}>
+        <View style={{
+          flex: 1,
+          marginTop: 20,
+          alignItems: 'center'
+        }}>
+        <View style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          borderBottomWidth: 1,
+          flexDirection: 'row',
+          paddingTop: 10,
+          marginBottom: 10,
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+            {backIcon}
+          </TouchableOpacity>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5,
+          }}>Login</Text>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+          </TouchableOpacity>
+        </View>
+          <TextInput
+            style={styles.inputField}
+            placeholder="Email"
+            onChangeText={(text) => this.setState({email: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            secureTextEntry={true}
+            placeholder="Password"
+            onChangeText={(text) => this.setState({password: text})}
+          />
+          <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitInfo()}>
+            <Text style={styles.buttonLabel}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
     )
   }
 }
@@ -677,28 +899,60 @@ class VolunteerLoginScreen extends React.Component{
 
   render(){
     return(
-      <View style={{
-        flex: 1,
-        marginTop: 20,
-        alignItems: 'center'
-      }}>
-        <TextInput
-          style={styles.inputField}
-          name="email"
-          placeholder="E-Mail"
-          onChangeText={(text) => this.setState({email: text})}
-        />
-        <TextInput
-          style={styles.inputField}
-          name="password"
-          placeholder="Password"
-          secureTextEntry = {true}
-          onChangeText={(text) => this.setState({password: text})}
-        />
-        <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitLogin()}>
-          <Text style={styles.buttonLabel}>Login</Text>
-        </TouchableOpacity>
-      </View>
+      <KeyboardAwareScrollView extraScrollHeight={10}>
+        <View style={{
+          flex: 1,
+          marginTop: 20,
+          alignItems: 'center'
+        }}>
+        <View style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          borderBottomWidth: 1,
+          flexDirection: 'row',
+          paddingTop: 10,
+          marginBottom: 10,
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+            {backIcon}
+          </TouchableOpacity>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5,
+          }}>Login</Text>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+          }}>
+          </TouchableOpacity>
+        </View>
+          <TextInput
+            style={styles.inputField}
+            placeholder="Email"
+            onChangeText={(text) => this.setState({email: text})}
+          />
+          <TextInput
+            style={styles.inputField}
+            secureTextEntry={true}
+            placeholder="Password"
+            onChangeText={(text) => this.setState({password: text})}
+          />
+          <TouchableOpacity style = {[styles.submitButton, styles.buttonBlue]} onPress = {() => this.submitLogin()}>
+            <Text style={styles.buttonLabel}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAwareScrollView>
     )
   }
 }
@@ -740,7 +994,8 @@ class OrganizationFeedScreen extends React.Component{
           flex: 1,
           flexDirection: 'row',
           borderBottomWidth: 1,
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
         }}>
           <TouchableOpacity onPress={() => this.props.navigation.navigate('EventPost')} style={{
             marginTop: 20,
@@ -754,6 +1009,7 @@ class OrganizationFeedScreen extends React.Component{
             fontWeight: 'bold',
             fontFamily: 'Avenir',
             fontSize: 23,
+            marginBottom: 5,
           }}>
             Feed
           </Text>
@@ -873,7 +1129,7 @@ class VolunteerFeedScreen extends React.Component{
           flexDirection: 'row',
           borderBottomWidth: 1,
           justifyContent: 'space-between',
-          alignItems: 'baseline',
+          alignItems: 'flex-end',
           paddingTop: 10,
         }}>
           <TouchableOpacity onPress={() => this.props.navigation.navigate('Search')} style={{
@@ -882,12 +1138,12 @@ class VolunteerFeedScreen extends React.Component{
             marginLeft: 20,
             marginRight: 20,
           }}>
-            {searchIcon}
           </TouchableOpacity>
           <Text style={{
             fontWeight: 'bold',
             fontFamily: 'Avenir',
             fontSize: 23,
+            marginBottom: 5,
           }}>
             Feed
           </Text>
@@ -1071,6 +1327,36 @@ class EventPost extends React.Component{
       <KeyboardAwareScrollView>
         <View style={{
           flex: 1,
+          justifyContent: 'space-between',
+          borderBottomWidth: 1,
+          alignItems: 'flex-end',
+          flexDirection: 'row',
+        }}>
+        <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+          marginTop: 20,
+          marginBottom: 10,
+          marginRight: 20,
+          marginLeft: 20,
+
+        }}>
+          {backIcon}
+        </TouchableOpacity>
+        <Text style={{
+          fontFamily: 'Avenir',
+          fontSize: 23,
+          fontWeight: 'bold',
+          marginBottom: 5,
+        }}>New Event</Text>
+        <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+          marginTop: 20,
+          marginBottom: 10,
+          marginRight: 20,
+          marginLeft: 20,
+        }}>
+        </TouchableOpacity>
+        </View>
+        <View style={{
+          flex: 1,
           marginTop: 20,
           alignItems: 'center'
         }}>
@@ -1180,7 +1466,7 @@ class SelfVolunteerProfile extends React.Component{
           flex: 1,
           flexDirection: 'row',
           borderBottomWidth: 1,
-          alignItems: 'baseline',
+          alignItems: 'flex-end',
           justifyContent: 'space-between',
           paddingTop: 10,
         }}>
@@ -1196,6 +1482,7 @@ class SelfVolunteerProfile extends React.Component{
             fontWeight: 'bold',
             fontFamily: 'Avenir',
             fontSize: 23,
+            marginBottom: 5,
           }}>
             Profile
           </Text>
@@ -1203,9 +1490,8 @@ class SelfVolunteerProfile extends React.Component{
             marginTop: 20,
             marginRight: 20,
             marginLeft: 20,
-            marginBottom: 10
+            marginBottom: 10,
           }}>
-            {settingsIcon}
           </TouchableOpacity>
         </View>
         <View style={{
@@ -1343,7 +1629,8 @@ class SelfOrganizationProfile extends React.Component{
           flex: 1,
           flexDirection: 'row',
           borderBottomWidth: 1,
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
         }}>
           <TouchableOpacity onPress = {() => this.props.navigation.navigate('OrganizationFeed')} style={{
             marginTop: 20,
@@ -1353,13 +1640,18 @@ class SelfOrganizationProfile extends React.Component{
           }}>
             {backIcon}
           </TouchableOpacity>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5
+          }}>Profile</Text>
           <TouchableOpacity onPress = {() => this.props.navigation.navigate('OrganizationSettings')} style={{
             marginTop: 20,
             marginRight: 20,
             marginLeft: 20,
             marginBottom: 10
           }}>
-            {settingsIcon}
           </TouchableOpacity>
         </View>
         <View style={{
@@ -1506,6 +1798,7 @@ class OrganizationProfile extends React.Component{
       email: '',
       link: '',
       description: '',
+      picture: '',
     }
   }
   static navigationOptions = {
@@ -1519,6 +1812,7 @@ class OrganizationProfile extends React.Component{
       .then((response)=>response.json())
       .then((responseJson) => {
         this.setState({
+          picture: responseJson.picture,
           name: responseJson.name,
           email: responseJson.email,
           link: responseJson.link,
@@ -1531,95 +1825,110 @@ class OrganizationProfile extends React.Component{
 
   render(){
     return (
-      <View style={{
+      <KeyboardAwareScrollView style={{
         flex: 1
       }}>
         <View style={{
           flex: 1,
           flexDirection: 'row',
           borderBottomWidth: 1,
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
         }}>
           <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
-            marginTop: 30,
+            marginTop: 20,
             marginBottom: 10,
             marginRight: 20,
             marginLeft: 20
           }}>
             {backIcon}
           </TouchableOpacity>
-          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
-            marginTop: 30,
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5
+          }}>Profile</Text>
+          <TouchableOpacity style={{
+            marginTop: 20,
             marginRight: 20,
             marginLeft: 20,
             marginBottom: 10
           }}>
-            {settingsIcon}
+            {/* {settingsIcon} */}
           </TouchableOpacity>
         </View>
         <View style={{
           flex: 10,
         }}>
+          <View style={{
+            flex: 2,
+            flexDirection: 'row',
+            borderBottomWidth: 1,
+            alignItems: 'center'
+          }}>
             <View style={{
               flex: 2,
-              flexDirection: 'row',
-              borderBottomWidth: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingTop: 20,
+              paddingRight: 20,
+              paddingLeft: 20,
+              paddingBottom: 20,
             }}>
-              <View style={{
-                flex: 1,
-              }}>
-                <View style={{
-                  flex: 2,
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {this.state.picture && <Image style={{width:100, height:100, borderColor:'black', borderWidth: 1, borderRadius: 10, marginBottom: 10}} source={{uri:this.state.picture}}/>}
-                </View>
-                <View style={{
-                  flex: 3,
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Text style={{
-                    fontWeight: 'bold',
-                    fontSize: 15,
-                    fontFamily: 'HelveticaNeue-Medium',
-                    marginBottom: 10
-                  }}>{this.state.name}</Text>
-                  <Text style={{
-                    textDecorationLine: 'underline',
-                    fontStyle: 'italic',
-                    fontSize: 15,
-                    fontFamily: 'HelveticaNeue-Medium',
-                  }}>Contact Me:</Text>
-                  <Text style={{
-                    fontSize: 15,
-                    fontFamily: 'HelveticaNeue-Medium',
-                  }}>{this.state.email}</Text>
-                  <Text style={{
-                    fontSize: 15,
-                    fontFamily: 'HelveticaNeue-Medium',
-                  }}>{this.state.link}</Text>
-                </View>
-              </View>
-              <View style={{
-                flex: 1,
-              }}>
-                <Text style={{
-                  fontFamily: 'HelveticaNeue-Medium',
-                  alignSelf: 'center',
-                  fontSize: 15,
-                  fontWeight: 'bold',
-                  textDecorationLine: 'underline'
-                }}>Our Mission:</Text>
-                <Text>{this.state.description}</Text>
-              </View>
+              {this.state.picture && <Image style={{width:100, height:100, borderColor:'black', borderWidth: 1, borderRadius: 10, marginBottom: 10}} source={{uri:this.state.picture}}/>}
             </View>
+            <View style={{
+              flex: 3,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Text style={{
+                fontWeight: 'bold',
+                fontSize: 15,
+                fontFamily: 'HelveticaNeue-Medium',
+                marginBottom: 10
+              }}>{this.state.name}</Text>
+              <Text style={{
+                textDecorationLine: 'underline',
+                fontStyle: 'italic',
+                fontSize: 15,
+                fontFamily: 'HelveticaNeue-Medium',
+              }}>Contact Me:</Text>
+              <Text style={{
+                fontSize: 15,
+                fontFamily: 'HelveticaNeue-Medium',
+              }}>{this.state.email}</Text>
+              <Text style={{
+                fontSize: 15,
+                fontFamily: 'HelveticaNeue-Medium',
+              }}>{this.state.link}</Text>
+            </View>
+          </View>
           <View style={{
             flex: 4,
+          }}>
+          <View style={{
+            borderBottomWidth: 1,
             paddingTop: 20,
             paddingLeft: 20,
+            paddingRight: 20,
+            paddingBottom: 20,
           }}>
+            <Text style={{
+              fontFamily: 'HelveticaNeue-Medium',
+              alignSelf: 'center',
+              fontSize: 15,
+              fontWeight: 'bold',
+              textDecorationLine: 'underline'
+            }}>Our Mission:</Text>
+            <Text style={{
+              // alignSelf: 'center',
+              fontSize: 15,
+              fontFamily: 'HelveticaNeue',
+              paddingRight: 10
+            }}>{this.state.description}</Text>
+          </View>
           {/* <ListView
             dataSource={this.state.dataSource}
             renderRow={(rowData) =>
@@ -1681,7 +1990,7 @@ class OrganizationProfile extends React.Component{
           /> */}
           </View>
         </View>
-      </View>
+      </KeyboardAwareScrollView>
     )
   }
 }
@@ -1710,7 +2019,6 @@ class VolunteerProfile extends React.Component{
       })
       .then((response)=>response.json())
       .then((responseJson) => {
-        alert("PLEASE BE THE OTHER USER", responseJson)
         this.setState({
           email: responseJson.email,
           fname: responseJson.firstName,
@@ -1719,7 +2027,7 @@ class VolunteerProfile extends React.Component{
           picture: responseJson.picture
         })
       })
-      .catch((err)=>alert("Catch error fuck"))
+      .catch((err)=>alert("Catch error"))
     })
   }
   render(){
@@ -1731,23 +2039,31 @@ class VolunteerProfile extends React.Component{
           flex: 1,
           flexDirection: 'row',
           borderBottomWidth: 1,
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
         }}>
           <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
-            marginTop: 30,
+            marginTop: 20,
             marginBottom: 10,
             marginRight: 20,
             marginLeft: 20
           }}>
             {backIcon}
           </TouchableOpacity>
-          <TouchableOpacity onPress = {() => this.props.navigation.navigate('VolunteerSettings')} style={{
-            marginTop: 30,
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5,
+          }}>
+          </Text>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
             marginRight: 20,
             marginLeft: 20,
             marginBottom: 10
           }}>
-            {settingsIcon}
+            {/* {settingsIcon} */}
           </TouchableOpacity>
         </View>
         <View style={{
@@ -1845,56 +2161,92 @@ class Attending extends React.Component{
   }
   render() {
     return (
-      <View>
-        <ListView
-          dataSource={this.state.dataSource}
-          renderRow={(rowData) =>
-            <TouchableOpacity
-              style={{
-              justifyContent: 'center',
-              alignItems: 'center'}}
-              onPress={()=>this.handleProfileClick(rowData._id)}
-            >
-            <View style={{
-              flex: 1,
-              marginLeft: 10,
-              marginRight: 10,
-              borderWidth: 1,
-              marginBottom: 10,
-              marginTop: 10,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderRadius: 10,
-              backgroundColor: '#e6f7ff'
-                }}>
-              <View style= {{
-                      flex: 3,
-                      paddingLeft: 20,
-                      paddingTop: 10,
-                      paddingBottom: 10,
-                    }}>
-                <Text>
-                  {rowData.firstName} {rowData.lastName}
-                </Text>
-                <Text>
-                  {rowData.email}
-                </Text>
-              </View>
-              <View style ={{
-                flex: 1,
-                alignItems: 'flex-end',
+      <View style={{
+        flex: 1,
+      }}>
+        <View style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          alignItems: 'flex-end',
+          borderBottomWidth: 1,
+          flexDirection: 'row',
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+
+          }}>
+            {backIcon}
+          </TouchableOpacity>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 23,
+            fontWeight: 'bold',
+            marginBottom: 5,
+          }}>Attendees</Text>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+          }}>
+          </TouchableOpacity>
+        </View>
+        <View style={{
+          flex: 10,
+        }}>
+          <ListView
+            dataSource={this.state.dataSource}
+            renderRow={(rowData) =>
+              <TouchableOpacity
+                style={{
                 justifyContent: 'center',
-                marginRight: 20,
-                marginTop: 10,
+                alignItems: 'center'}}
+                onPress={()=>this.handleProfileClick(rowData._id)}
+              >
+              <View style={{
+                flex: 1,
+                marginLeft: 10,
+                marginRight: 10,
+                borderWidth: 1,
                 marginBottom: 10,
-              }}>
-              {rowData.picture && <Image style={{width:75, height: 75, borderWidth: 1, borderRadius: 10}} source={{uri:rowData.picture}}/>}
+                marginTop: 10,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderRadius: 10,
+                backgroundColor: '#e6f7ff'
+                  }}>
+                <View style= {{
+                        flex: 3,
+                        paddingLeft: 20,
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                      }}>
+                  <Text>
+                    {rowData.firstName} {rowData.lastName}
+                  </Text>
+                  <Text>
+                    {rowData.email}
+                  </Text>
+                </View>
+                <View style ={{
+                  flex: 1,
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  marginRight: 20,
+                  marginTop: 10,
+                  marginBottom: 10,
+                }}>
+                {rowData.picture && <Image style={{width:75, height: 75, borderWidth: 1, borderRadius: 10}} source={{uri:rowData.picture}}/>}
+                </View>
               </View>
-            </View>
-            </TouchableOpacity>
-          }
-        />
+              </TouchableOpacity>
+            }
+          />
+        </View>
       </View>
     )
   }
@@ -2134,6 +2486,312 @@ class EventPage extends React.Component{
       location: null,
       time: null,
       picture: null,
+      description: null,
+      going: false
+    }
+  }
+
+  static navigationOptions = {
+    header: null
+  }
+
+  componentDidMount(){
+    AsyncStorage.getItem('eventID')
+    .then((result)=>{
+      console.log("PLEASE BE THE ID", result);
+      fetch(`${url}/event/${result}`, {
+        method: 'GET',
+        credentials: 'same-origin'
+      })
+      .then((response)=>response.json())
+      .then(async (responseJson) => {
+        let going;
+        let email = await AsyncStorage.getItem('email')
+        going = responseJson.attendees.findIndex(user => user.email === email) ? true :false
+
+
+        this.setState({
+          eventID: result,
+          organization: responseJson.organization,
+          name: responseJson.name,
+          attendees: responseJson.attendees,
+          location: responseJson.location,
+          time: responseJson.time,
+          picture: responseJson.picture,
+          description: responseJson.description,
+          going: going,
+        })
+
+      })
+      .catch((err)=>alert("Error while getting event details", err))
+    })
+  }
+  handleSignUp(){
+    AsyncStorage.getItem('email')
+    .then((userEmail)=>{
+      return fetch(`${url}/signup`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          eventID: this.state.eventID,
+          userEmail: userEmail
+        })
+      })
+    })
+    .then((response)=>response.json())
+    .then((responseJson)=>{
+      console.log("JSONRESPONSE", responseJson.status)
+      if (responseJson.success){
+        if (!this.state.going){
+          alert('Successfully left the event')
+        } else{
+          alert("Successfully signed up for this event!");
+        }
+      } else {
+        alert("Error!");
+      }
+      this.setState({
+        going: !this.state.going
+      })
+    })
+  }
+
+  handleOrganizationPress(organizationName){
+    alert(organizationName);
+    AsyncStorage.setItem('OrganizationName', organizationName)
+    .then(()=>console.log('Organization name set'));
+    this.props.navigation.navigate('OrganizationProfile');
+  }
+
+  toggleSignUp(){
+    AsyncStorage.getItem('email')
+    .then((result)=>{
+      // this.render();
+      console.log("TRUE/FALSE", repeatCheck(this.state.attendees, result))
+      return repeatCheck(this.state.attendees, result);
+    })
+  }
+
+
+  render(){
+    console.log("GOING OR NOT", this.state.going);
+    return (
+      <KeyboardAwareScrollView style={{
+        flex: 1,
+      }}>
+        <View style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          borderBottomWidth: 1,
+          justifyContent: 'space-between',
+        }}>
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
+            marginTop: 20,
+            marginBottom: 10,
+            marginRight: 20,
+            marginLeft: 20,
+          }}>
+            {backIcon}
+          </TouchableOpacity>
+          <Text style={{
+            fontWeight: 'bold',
+            fontSize: 23,
+            fontFamily: 'Avenir',
+            marginBottom: 5,
+          }}>
+            Event Details
+          </Text>
+          <TouchableOpacity onPress={() => this.props.navigation.navigate('Attending')} style={{
+              marginTop: 20,
+              marginRight: 20,
+              marginBottom: 10,
+              marginLeft: 20,
+            }}>
+              <View style={{
+                flexDirection: 'row',
+              }}>
+                {userIcon}<Text style={{
+                  paddingLeft: 3,
+                  fontSize: 15,
+                  fontFamily: 'Avenir',
+                }}>{this.state.attendees.length}</Text>
+              </View>
+            </TouchableOpacity>
+        </View>
+        <View style={{
+          flex: 10,
+        }}>
+          <View style={{
+            flex: 2,
+            borderBottomWidth: 1,
+            flexDirection: 'row',
+            paddingLeft: 20,
+          }}>
+            {/* add everything except for description */}
+            <View style={{
+              flex: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 20,
+              marginBottom: 20,
+              marginLeft: 20,
+              marginRight: 20,
+            }}>
+              {this.state.picture && <Image style={{width:100, height:100, borderColor:'black', borderWidth: 1, borderRadius: 10}} source={{uri:this.state.picture}}/>}
+            </View>
+            <View style={{
+              flex: 3,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingTop: 20,
+              paddingBottom: 20,
+              paddingLeft: 20,
+              paddingRight: 20,
+            }}>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir',
+                textDecorationLine: 'underline',
+                fontWeight: 'bold',
+              }}>Organization:</Text>
+              <TouchableOpacity onPress={() => this.handleOrganizationPress(this.state.organization)}>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir'
+              }}>
+                {this.state.organization}
+              </Text>
+            </TouchableOpacity>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir',
+                textDecorationLine: 'underline',
+                fontWeight: 'bold',
+              }}>Event:</Text>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir'
+              }}>
+              {this.state.name}
+              </Text>
+            </View>
+          </View>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderBottomWidth: 1,
+          }}>
+            <Text style={{
+              paddingTop: 10,
+              paddingBottom: 5,
+              fontSize: 20,
+              fontWeight: 'bold',
+              fontFamily: 'Avenir',
+            }}>{this.state.time}</Text>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              fontFamily: 'Avenir',
+            }}>{this.state.location}</Text>
+            {this.state.going ?
+            <TouchableOpacity onPress={() => this.handleSignUp()} style={{
+              borderWidth: 1,
+              paddingTop: 5,
+              paddingBottom: 5,
+              paddingRight: 10,
+              paddingLeft: 10,
+              marginBottom: 20,
+              borderRadius: 5,
+              backgroundColor: '#e6f7ff',
+            }}>
+              <Text style={{fontFamily: 'Avenir'}}>Sign Up</Text>
+            </TouchableOpacity>
+            :
+            <TouchableOpacity onPress={() => this.handleSignUp()} style={{
+              borderWidth: 1,
+              paddingTop: 5,
+              paddingBottom: 5,
+              paddingRight: 10,
+              paddingLeft: 10,
+              marginBottom: 20,
+              borderRadius: 5,
+              backgroundColor: '#e6f7ff',
+            }}>
+              <Text style={{fontFamily: 'Avenir'}}>Cancel</Text>
+            </TouchableOpacity>
+          }
+          </View>
+          <View style ={{
+            flex: 2,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingTop: 20,
+            paddingLeft: 20,
+            paddingRight: 20,
+            paddingBottom: 20,
+          }}>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontWeight: 'bold',
+            fontSize: 15,
+            textDecorationLine: 'underline'
+          }}>Description:</Text>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 15,
+          }}>{this.state.description}</Text>
+          </View>
+        </View>
+      </KeyboardAwareScrollView>
+      // <View>
+      //   <TouchableOpacity onPress={()=>this.handleOrganizationPress(this.state.organization)}>
+      //     <Text style={{
+      //       fontSize: 20,
+      //       textAlign: 'center'
+      //     }}>{this.state.organization}</Text>
+      //   </TouchableOpacity>
+      //   <Text
+      //     style={{
+      //       fontSize: 20,
+      //       fontWeight: 'bold',
+      //       textAlign: 'center'
+      //     }}>{this.state.name}</Text>
+      //   {this.state.picture && <Image style={{alignItems: 'center', width:300, height:300, borderColor:'black', borderWidth: 1, marginBottom: 30}} source={{uri:this.state.picture}}/>}
+      //   <Text>{this.state.time}</Text>
+      //   <Text>{this.state.location}</Text>
+      //   <Text>{this.state.description}</Text>
+      //   <TouchableOpacity style={[styles.submitButton, styles.buttonBlue]} onPress={() => this.handleSignUp()}>
+      //     <Text style={styles.buttonLabel}>Sign Up</Text>
+      //   </TouchableOpacity>
+      //   <View>
+      //   <TouchableOpacity onPress={() => this.props.navigation.navigate('Attending')} style={{
+      //     marginTop: 10,
+      //     marginRight: 20,
+      //     marginBottom: 10
+      //   }}>
+      //     {userIcon}<Text>{this.state.attendees.length}</Text>
+      //   </TouchableOpacity>
+      // </View>
+      // </View>
+    )
+  }
+}
+class OrganizationEventPage extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      eventID: null,
+      organization: null,
+      name: null,
+      attendees: [],
+      location: null,
+      time: null,
+      picture: null,
       description: null
     }
   }
@@ -2201,6 +2859,13 @@ class EventPage extends React.Component{
     this.props.navigation.navigate('OrganizationProfile');
   }
 
+  toggleSignUp(){
+    AsyncStorage.getItem('email')
+    .then((result)=>{
+      return repeatCheck(this.state.attendees, result);
+    })
+  }
+
 
   render(){
     return (
@@ -2210,12 +2875,11 @@ class EventPage extends React.Component{
         <View style={{
           flex: 1,
           flexDirection: 'row',
-          alignItems: 'baseline',
+          alignItems: 'flex-end',
           borderBottomWidth: 1,
-          paddingTop: 10,
           justifyContent: 'space-between'
         }}>
-          <TouchableOpacity onPress = {() => this.props.navigation.navigate('VolunteerFeed')} style={{
+          <TouchableOpacity onPress = {() => this.props.navigation.goBack()} style={{
             marginTop: 20,
             marginBottom: 10,
             marginRight: 20,
@@ -2228,6 +2892,7 @@ class EventPage extends React.Component{
             fontWeight: 'bold',
             fontSize: 23,
             fontFamily: 'Avenir',
+            marginBottom: 5,
           }}>
             Event Details
           </Text>
@@ -2237,7 +2902,15 @@ class EventPage extends React.Component{
               marginBottom: 10,
               marginLeft: 20,
             }}>
-              {userIcon}<Text>{this.state.attendees.length}</Text>
+              <View style={{
+                flexDirection: 'row',
+              }}>
+                {userIcon}<Text style={{
+                  paddingLeft: 3,
+                  fontSize: 15,
+                  fontFamily: 'Avenir',
+                }}>{this.state.attendees.length}</Text>
+              </View>
             </TouchableOpacity>
         </View>
         <View style={{
@@ -2270,38 +2943,72 @@ class EventPage extends React.Component{
               paddingLeft: 20,
               paddingRight: 20,
             }}>
-              <Text>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir',
+                textDecorationLine: 'underline',
+                fontWeight: 'bold',
+              }}>Organization:</Text>
+              <TouchableOpacity onPress = {() => this.navigation.navigate('')}>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir'
+              }}>
                 {this.state.organization}
               </Text>
-              <Text>
-                {this.state.name}
+            </TouchableOpacity>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir',
+                textDecorationLine: 'underline',
+                fontWeight: 'bold',
+              }}>Event:</Text>
+              <Text style={{
+                fontSize: 17,
+                fontFamily: 'Avenir'
+              }}>
+              {this.state.name}
               </Text>
             </View>
           </View>
           <View style={{
             flex: 1,
-            flexDirection:'row',
             justifyContent: 'center',
             alignItems: 'center',
             borderBottomWidth: 1,
           }}>
-            <TouchableOpacity onPress={() => this.handleSignUp()}>
-              <Text>Sign Up</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.props.navigation.navigate('Attending')} style={{
-                marginTop: 10,
-                marginRight: 20,
-                marginBottom: 10
-              }}>
-                {userIcon}<Text>{this.state.attendees.length}</Text>
-              </TouchableOpacity>
+            <Text style={{
+              paddingTop: 10,
+              paddingBottom: 5,
+              fontSize: 20,
+              fontWeight: 'bold',
+              fontFamily: 'Avenir',
+            }}>{this.state.time}</Text>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              fontFamily: 'Avenir',
+            }}>{this.state.location}</Text>
           </View>
           <View style ={{
             flex: 2,
             justifyContent: 'center',
             alignItems: 'center',
+            paddingTop: 20,
+            paddingLeft: 20,
+            paddingRight: 20,
+            paddingBottom: 20,
           }}>
-          <Text>Description!</Text>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontWeight: 'bold',
+            fontSize: 15,
+            textDecorationLine: 'underline'
+          }}>Description:</Text>
+          <Text style={{
+            fontFamily: 'Avenir',
+            fontSize: 15,
+          }}>{this.state.description}</Text>
           </View>
         </View>
       </KeyboardAwareScrollView>
@@ -2335,68 +3042,6 @@ class EventPage extends React.Component{
       //   </TouchableOpacity>
       // </View>
       // </View>
-    )
-  }
-}
-class OrganizationEventPage extends React.Component{
-  constructor(props){
-    super(props);
-    this.state = {
-      eventID: null,
-      organization: null,
-      name: null,
-      attendees: [],
-      location: null,
-      time: null,
-      picture: null,
-      description: null
-    }
-  }
-  componentDidMount(){
-    alert("Mounted")
-    AsyncStorage.getItem('eventID')
-    .then((result)=>{
-      console.log("PLEASE BE THE ID", result);
-      fetch(`${url}/event/${result}`, {
-        method: 'GET',
-        credentials: 'same-origin'
-      })
-      .then((response)=>response.json())
-      .then((responseJson) => {
-        alert(responseJson.name)
-        this.setState({
-          eventID: result,
-          organization: responseJson.organization,
-          name: responseJson.name,
-          attendees: responseJson.attendees,
-          location: responseJson.location,
-          time: responseJson.time,
-          picture: responseJson.picture,
-          description: responseJson.description
-        })
-      })
-      .catch((err)=>alert("Error while getting event details", err))
-    })
-  }
-  render(){
-    return (
-      <View>
-        <Text>{this.state.organization}</Text>
-        <Text>{this.state.name}</Text>
-        {this.state.picture && <Image style={{width:300, height:300, borderColor:'black', borderWidth: 1, marginBottom: 30}} source={{uri:this.state.picture}}/>}
-        <Text>{this.state.time}</Text>
-        <Text>{this.state.location}</Text>
-        <Text>{this.state.description}</Text>
-        <View>
-        <TouchableOpacity onPress={() => this.props.navigation.navigate('Attending')} style={{
-          marginTop: 10,
-          marginRight: 20,
-          marginBottom: 10
-        }}>
-          {userIcon}<Text>{this.state.attendees.length}</Text>
-        </TouchableOpacity>
-      </View>
-      </View>
     )
   }
 }
@@ -2467,7 +3112,7 @@ export default FluidNavigator({
   EventPost: {
     screen: EventPost,
   }
-})
+}, {duration: 5000, timing: Animated.timing, easing: Easing.easing})
 
 const styles = StyleSheet.create({
   anime: {
